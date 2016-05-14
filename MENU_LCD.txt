@@ -1,0 +1,183 @@
+//  PROGRAMA MENU LCD  CON FUNCION LEER BOTON
+
+#include <16F877A.h>
+
+#device adc=10
+#fuses NOWDT,NOPROTECT,NOLVP,NODEBUG, HS//,USBDIV//PLL1 //CPUDIV1 //,VREGEN HSPLL,
+#use delay (clock=20000000)
+
+#use standard_io(B)
+#define use_portB_lcd true
+#include <lcd.c>
+
+#define LED PIN_B3
+char btn;
+char btn_push;
+
+byte pagina_actual=1;
+byte pagina_anterior=1;
+byte total_paginas=4;
+
+char Boton(){
+	int16 medicion;
+	//LECTURA ANALOGA  DEL BOTON
+          setup_adc(ADC_CLOCK_INTERNAL); 
+          setup_adc_ports (AN0); 
+          set_adc_channel(0);
+          delay_us(20);  //20
+          medicion = read_adc(); 
+          setup_adc (adc_off);
+          
+          
+           //ASIGNACION    ADC    -   BOTON    
+            if(medicion < 100){
+              btn = 'U';         
+            }else if(medicion < 400){
+              btn = 'D';
+            }else if(medicion < 600){
+              btn = 'L';
+            }else if(medicion < 800){
+              btn = 'S';
+            }else{
+              btn = 'N';
+            } 
+return btn;
+}
+
+
+void display(){
+//display
+             //lcd_putc("                   ");
+             //lcd_gotoxy(1,1);
+             printf(lcd_putc,"\fAGAMENON V.2.0"); //     \f: limpia LCD
+             lcd_gotoxy(1,2);
+             
+             switch (pagina_actual){
+                    case 1:
+                    printf(lcd_putc,"<  1. Sensores >"); //15
+                    break;
+                    
+                    case 2:
+                    printf(lcd_putc,"<  2. Ataque  >");
+                    break;
+                    
+                    case 3:
+                    printf(lcd_putc,"<  3. Derecha  >");
+                    break;
+                    
+                    case 4:
+                    printf(lcd_putc,"<  4. Izquierda>");
+                    break;
+                 }
+                 delay_ms(250);
+
+}
+
+
+
+
+void menuA(){
+     
+     printf(lcd_putc,"\fSensores");
+     delay_ms(1500);
+     printf(lcd_putc,"\fI=20 F=18 D=21");
+     lcd_gotoxy(1,2);
+     printf(lcd_putc,"\QTRI=21 QTRD=55");
+    
+}
+
+void menuB(){
+     
+     printf(lcd_putc,"\fAtaque");
+
+}
+
+void menuC(){
+     
+     printf(lcd_putc,"\fDerecha");
+      
+}
+
+void menuD(){
+     
+    printf(lcd_putc,"\fIzquierda");
+ 
+}
+
+//**************************  PRINCIPAL  ********************************
+void main() {
+     
+
+     int16 medicion;
+     lcd_init();
+     display(); 
+ 
+     while (1)  
+     { 
+          
+          btn_push = Boton();
+          
+              if(btn_push=='U'){
+                    pagina_actual++;
+                    if(pagina_actual>total_paginas){
+                         pagina_actual=1;
+                    }
+              }
+              else if (btn_push=='D'){
+                    pagina_actual--;
+                    if(pagina_actual==0){
+                         pagina_actual=total_paginas;
+                    }
+              }
+              
+              if (btn_push=='L'){
+                    display(); 
+              }
+              
+              
+              if(pagina_actual != pagina_anterior){
+                 
+                 display(); 
+                 pagina_anterior=pagina_actual;
+              }
+              
+             
+             if(btn_push == 'S')//enter selected menu
+             {
+             
+                 switch (pagina_actual){
+                    case 1:
+                    menuA();
+                    //printf(lcd_putc,"dentro A");
+                    
+                    break;
+                    
+                    case 2:
+                    menuB();
+                    //printf(lcd_putc,"dentro B");
+                    break;
+                    
+                    case 3:
+                    menuC();
+                    //printf(lcd_putc,"dentro C");
+                    break;
+                    
+                    case 4:
+                    menuD();
+                    //printf(lcd_putc,"dentro D");
+                    break;
+                 }
+                 
+                 
+             
+             while(medicion < 800){}
+              }
+            
+       delay_ms(10);
+       
+       
+     }
+   
+}
+     
+
